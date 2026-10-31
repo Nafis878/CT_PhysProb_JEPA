@@ -1,0 +1,32 @@
+{
+  "architecture": "CT_PhysProb_JEPA_KinGate",
+  "components": {
+    "latent_dynamics": "2nd_order_hamiltonian_leapfrog_ode",
+    "kinematic_prior": "learned_degradation_knee_gate",
+    "continuous_damping": "gru_d_adaptive_decay"
+  },
+  "hyperparameters": {
+    "latent_dim": 16,
+    "hidden_dim": 48,
+    "alpha": 0.10,
+    "gamma0": 0.15,
+    "decay_w_init": 0.25,
+    "dt_substep_max": 0.0875,
+    "lr": 0.0035,
+    "weight_decay": 0.0001,
+    "epochs": 8,
+    "loss": "asymmetric_safety_loss",
+    "lambda_opt": 1.0,
+    "training_augmentation": "mixed_gaps_short_long_stride3_15"
+  },
+  "validation_performance_10seeds_ood_10x_20x": {
+    "rmse_mean": 19.209,
+    "rmse_std": 0.755,
+    "signed_bias_active_deg": 6.253,
+    "nasa_score": 2418.58,
+    "status_vs_gru_d": "statistically_tied_p_0.17",
+    "status_vs_patchtst": "significantly_better_p_0.042"
+  },
+  "timestamp": "2026-10-31T21:56:00Z",
+  "config_hash": "070ab9c4ec0425112c499a64741e523825fc90c87eee77585326e3bfc3be270e"
+}

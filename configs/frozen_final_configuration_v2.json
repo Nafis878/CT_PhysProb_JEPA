@@ -1,0 +1,40 @@
+{
+  "configuration_version": "v2_frozen",
+  "architecture": "CT_PhysProb_JEPA_v2_SWA",
+  "components": {
+    "encoder": "GRUD_TemporalEncoder_in42_hidden48_latent16",
+    "latent_dynamics": "2nd_order_hamiltonian_leapfrog_ode",
+    "countdown_head": "KneeHazardHead_closed_form_integral",
+    "variance_reduction": "Stochastic_Weight_Averaging_last_3_epochs"
+  },
+  "hyperparameters": {
+    "latent_dim": 16,
+    "hidden_dim": 48,
+    "alpha": 0.10,
+    "gamma0": 0.15,
+    "decay_w_init": 0.25,
+    "dt_substep_max": 0.0875,
+    "lr": 0.0035,
+    "weight_decay": 0.0001,
+    "epochs": 8,
+    "loss": "asymmetric_safety_loss",
+    "lambda_opt": 1.0,
+    "training_augmentation": "mixed_gaps_short_long_stride3_15",
+    "swa_epochs": [5, 6, 7]
+  },
+  "validation_performance_10seeds_ood_10x_20x": {
+    "total_rmse_mean": 18.951,
+    "total_rmse_std": 0.838,
+    "anchor_rmse_mean": 16.273,
+    "anchor_rmse_std": 0.982,
+    "signed_bias_active_deg": 7.182,
+    "nasa_score": 2459.45,
+    "paired_diff_vs_gru_d_v2": -0.011,
+    "paired_p_val_vs_gru_d_v2": 0.9375,
+    "physics_ablation_diff": -0.062,
+    "physics_ablation_p_val": 0.6919,
+    "statistical_status": "TIED_WITHIN_NOISE"
+  },
+  "timestamp": "2026-10-31T23:58:00Z",
+  "config_hash": "5f8b33b5253bb903011ba391c4e348af4c17cf72dbf31c971a2c07117cad656d"
+}
