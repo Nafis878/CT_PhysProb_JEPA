@@ -938,7 +938,7 @@
     "dual_significance_requirement": "BOTH p_Holm < 0.05 across seeds AND engine bootstrap 95% CI excluding 0 AND |Delta| >= threshold required for SUPPORTED or HARMS",
     "sub_threshold_label": "STATISTICALLY DETECTABLE BUT NOT PRACTICALLY RELEVANT"
   },
-  "git_commit_hash": "e255c37e6c78355aae8650e3423e4f808ff6b9ad",
+  "git_commit_hash": "2c89e054e24c700dbe84506526fdce0b73f49508",
   "git_tag": "preregistration-v2.5",
   "git_repository": "C:/Users/UseR/Downloads/Continous",
   "external_registration_record": {
@@ -947,7 +947,9 @@
     "tag": "preregistration-v2.5",
     "remote_url": "https://github.com/Nafis878/CT_PhysProb_JEPA.git",
     "timestamp": "2026-11-01T11:12:00+06:00",
-    "status": "LOCKED_BEFORE_CONFIRMATORY_RUNS"
+    "status": "LOCKED_BEFORE_CONFIRMATORY_RUNS",
+    "commit_hash": "2c89e054e24c700dbe84506526fdce0b73f49508",
+    "annotated_tag_hash": "dadb4b0c48c71f113697de30282f9cf8b668ae66"
   },
   "conformal_calibration_selection": {
     "rng_seed": 20261101,
