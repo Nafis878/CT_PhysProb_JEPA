@@ -1,5 +1,5 @@
-# PREREGISTRATION PROTOCOL (v2 REVISION — DATED AMENDMENT v2.5)
-**Document Version:** 2.5 (Dated Amendment before Confirmatory Runs)  
+# PREREGISTRATION PROTOCOL (v2 REVISION — DATED AMENDMENT v2.6)
+**Document Version:** 2.6 (Dated Amendment before FD004 Confirmatory Evaluation)  
 **Date of Execution:** 2026-11-01  
 **Target Journal:** *Reliability Engineering & System Safety* (RESS)  
 **Investigator:** Research Engineer and Statistician  
@@ -14,7 +14,8 @@
 - `v2.2` (2026-11-01): SHA-256 `a5a49d1cb902564d869ae7f51194f39afc4fc0460669c985199d5e4eabaf47c8` (Two-sided hypothesis structure, TOST justifications, equal-budget baseline sweep).  
 - `v2.3` (2026-11-01): SHA-256 `5317da1e5579bf25571c2a7b93e120097c25d480c574ee1f1fec7be5df355ee6` (Engine-level cluster bootstrap, practical significance thresholds, separate H3/H4b family structure).  
 - `v2.4` (2026-11-01): SHA-256 `34224e9aa4a797a66059426bd06e7e6980b5108099651b17a45d97da7a081a6b` (Independent FD003 calibration sampling, precise H1/H2 definitions, descriptive companions for bias, edge extension re-freezing, seed variability disclosure).  
-- `v2.5` (2026-11-01): Current locked version (External HTTPS GitHub registration, rewritten empirical pre-data disclosures matching validation table, H4 single-verdict rule on RMSE_All only, common random numbers and window sensitivity protocol, complete grid sweep table, and restricted H3 power note).  
+- `v2.5` (2026-11-01): SHA-256 `708bef147e8debb106b14ca72a12ea3ebf3cb3af1118d2756afd20204947930f` (External HTTPS GitHub registration, rewritten empirical pre-data disclosures matching validation table, H4 single-verdict rule on RMSE_All only, common random numbers and window sensitivity protocol, complete grid sweep table, and restricted H3 power note).  
+- `v2.6` (2026-11-01): Current locked version (Pre-registration of NASA C-MAPSS FD004 multi-condition confirmatory evaluation protocol: 6 operating regimes, training-set-only condition normalization, 199/50/248 engine split, frozen configs without retuning, identical 30-seed $M=40$ hypothesis family, H3 TOST, H4b ablation, and dual bootstrap estimands).  
 **Protocol Status:** LOCKED & FROZEN prior to unblinded confirmatory runs.  
 
 ---
@@ -310,3 +311,76 @@ SEEDS_30 = [
 ## 7. Manifest & Cryptographic Registration
 
 Full unit lists, split mappings, re-frozen baseline hyperparameters, and cryptographic hashes are permanently sealed in [`results/raw/CONFIRMATORY_MANIFEST.json`](file:///C:/Users/UseR/Downloads/Continous/results/raw/CONFIRMATORY_MANIFEST.json).
+
+---
+
+## 8. Amendment v2.6: NASA C-MAPSS FD004 Multi-Condition Confirmatory Protocol
+
+This amendment formally pre-registers the secondary confirmatory evaluation protocol on **NASA C-MAPSS FD004** prior to accessing, unblinding, or running any evaluation code on FD004 official test data.
+
+### 8.1 Dataset Description & Split Partitioning
+NASA C-MAPSS FD004 represents complex aero-engine degradation under six distinct operating regimes and two failure modes (HPC degradation and Fan degradation).
+- **Raw Data Files & Cryptographic Checksums:**
+  - `data/raw/CMAPSS/train_FD004.txt` (249 engines): SHA-256 `27ef6160b6a1dcb2613a88de9c239f763b223f02cdc41dc5cdedc5dc189b6218`
+  - `data/raw/CMAPSS/test_FD004.txt` (248 engines): SHA-256 `1dc675fff0624bac10786927c6715b37d1297657137400d2b1a3138d777a3ba5`
+  - `data/raw/CMAPSS/RUL_FD004.txt` (248 values): SHA-256 `196b836b85a95ac7fdbbf29c5fdf1657382eafa445644d114ffaaf50dc2975e1`
+- **Engine Unit Partitioning (Zero Overlap):**
+  - **Training Engines (80%):** Units 1 through 199 (199 engines). Used exclusively for fitting model weights and regime normalization statistics.
+  - **Conformal Calibration Engines (20%):** Units 200 through 249 (50 engines). Held out from model training; used exclusively for split-conformal calibration of non-conformity scores and interval bounds.
+  - **Official Confirmatory Test Engines:** Units 1 through 248 (248 engines). Official test set; untouched until the formal unblinded confirmatory run. Zero overlap exists between the official test engines and the training/calibration pools.
+
+### 8.2 Operational Regime Identification & Leakage-Free Normalization
+FD004 telemetry is modulated by three operational settings (`setting_1` Altitude, `setting_2` Mach Number, `setting_3` Throttle Resolver Angle):
+- **Regime Clustering:** Operational settings are clustered into the 6 canonical operating regimes using $k$-means clustering ($k=6$, fixed seed 42) or setting rounding.
+- **Strict Prohibition of Data Leakage:**
+  - Sensor normalization parameters (mean $\mu_{s, c}$ and standard deviation $\sigma_{s, c}$ for each sensor $s \in \{1 \dots 21\}$ in each operating condition $c \in \{1 \dots 6\}$) are computed **strictly on the 199 training engines**.
+  - Calibration engines (units 200–249) and test engines (units 1–248) are standardized using the training regime statistics.
+  - Under no circumstances shall test or calibration set statistics be computed or pooled into the normalization pipeline.
+
+### 8.3 Frozen Model Configurations (Zero-Retuning Policy)
+To prevent post-hoc overfitting and tuning bias across datasets, **no architectural modifications or hyperparameter retuning are permitted for FD004**. All models and baselines must use the exact configurations locked in `configs/frozen_final_configuration_v2.json` and `configs/baseline_tuned_configurations.json`:
+- Evaluated Models:
+  1. `CT_PhysProb_JEPA_v2_SWA` (Proposed: Masked GRU-D $d=48$, KneeHazardHead, Strang-symplectic Hamiltonian ODE, SWA)
+  2. `CT_PhysProb_JEPA_NoPhysics` (Matched ablation: Masked GRU-D $d=48$, KneeHazardHead, SWA, ODE removed)
+  3. `Euler_Damped` (Integrator ablation: Forward Euler ODE)
+  4. `Undamped` (Integrator ablation: $\gamma=0$)
+  5. `GRU_D_Enhanced_SWA` (Recipe backbone: Masked GRU-D $d=48$, KneeHazardHead, SWA)
+  6. `GRU_D_Canonical_SWA` (Linear probe control: Canonical GRU-D $d=80$, Linear Probe, SWA)
+  7. `Plain_NODE_Enhanced_SWA` (Continuous-time control: Neural ODE, KneeHazardHead, SWA)
+  8. `PatchTST_RUL_v2` (Transformer competitor: PatchTST $d=64$, KneeHazardHead, SWA)
+  9. `GRU_D_Original` (Original baseline: Canonical GRU-D $d=80$, Linear Probe, unaugmented)
+  10. `PatchTST_Original` (Original baseline: PatchTST $d=48$, Linear Probe, unaugmented)
+  11. `Plain_2ndOrder_NODE_Kin_Original` (Original baseline: MLP $d=24$, Kinematic Euler, unaugmented)
+  12. `TimeCorrected_LOCF_Oracle` (Non-deployable kinematic upper bound)
+  13. `Countdown` (Point reference heuristic)
+
+### 8.4 Evaluation Regimes & Seed Schedule
+- **Seeds:** Exactly 30 pre-registered seeds `[42, 100, 101, 102, ..., 128]`.
+- **Stress Regimes:** Evaluated across the 7 standardized regimes:
+  1. `InDist_1x_2x` (Dense baseline)
+  2. `OOD_10x_20x` (Primary blackout regime: random outages 10x to 20x nominal sampling rate)
+  3. `OOD_15x_25x` (Extended blackout regime)
+  4. `OOD_20x_30x` (Extreme blackout regime)
+  5. `Dropout_10pct` (10% random sensor dropout during blackout)
+  6. `Dropout_20pct` (20% random sensor dropout during blackout)
+  7. `Dropout_30pct` (30% random sensor dropout during blackout)
+
+### 8.5 Hypothesis Testing & Statistical Decision Rules
+The exact confirmatory statistical framework of v2.5 is preserved identically:
+- **Primary Hypothesis Family ($M=40$ Tests, Joint Holm-Bonferroni at $\alpha = 0.05$):**
+  - **Hypothesis H1 (12 Tests):** Sensor dropout resilience on `RMSE_All` across 10%, 20%, 30% dropout vs `GRU_D_Canonical_SWA` and `NoPhysics`.
+  - **Hypothesis H2 (8 Tests):** Extreme outage optimistic bias suppression on `Signed_Bias_ActiveDeg` across $15\text{x}\text{--}25\text{x}$ and $20\text{x}\text{--}30\text{x}$ outages.
+  - **Hypothesis H4 (18 Tests):** Recipe effect vs Original Baselines across `RMSE_All` (9 tests) and Active Bias (9 tests). Single-verdict rule: `RECIPE EFFECT SUPPORTED` declared only if all 9 `RMSE_All` comparisons pass dual significance and practical threshold.
+  - **Hypothesis H5 (2 Tests):** Additive latent physics benefit (`Proposed` vs `NoPhysics`) on `RMSE_All` and Active Bias.
+- **Separate Families:**
+  - **Hypothesis H3:** Integrator symplecticity equivalence via Two One-Sided Tests (TOST) on Strang vs Euler with equivalence bounds $\delta = \pm 0.25$ cycles on `RMSE_All` and $\delta = \pm 0.50$ cycles on Signed Bias.
+  - **Hypothesis H4b:** Component ablation on `GRU_D_Enhanced` backbone (All-On, All-Off, and 4 leave-one-out conditions; 10 tests under separate Holm family).
+- **Dual Criteria for Confirmatory Support:**
+  1. Multiplicity-adjusted $p_{\text{Holm}} < 0.05$.
+  2. Engine-level cluster bootstrap 95% percentile confidence interval strictly excluding 0 ($B=10,000$ resamples over the 248 official test engines).
+  3. Practical significance threshold: $|\bar{\Delta}| \ge 0.50\text{ cycles}$ for `RMSE_All`; $|\bar{\Delta}| \ge 1.00\text{ cycle}$ for Signed Bias.
+- **Dual Estimand Reporting:** Both Estimand 1 (pre-registered ensemble metric) and Estimand 2 (mean of single-seed metrics) reported with their respective bootstrap CIs.
+
+### 8.6 Pre-Execution Stop Gate
+This protocol amendment must be committed, tagged as `preregistration-v2.6`, and pushed to the remote HTTPS repository. **No script may execute on FD004 official test data until the user explicitly reviews this pre-registration and issues written instructions to proceed.**
+

@@ -6,8 +6,8 @@ Compute unified diff between PREREGISTRATION_V2.md (v2.4) and PREREGISTRATION_V2
 import difflib
 import subprocess
 
-# Get v2.4 text from git show HEAD:PREREGISTRATION_V2.md
-cmd = ['C:/Program Files/Git/cmd/git.exe', 'show', 'HEAD:PREREGISTRATION_V2.md']
+# Get v2.4 text from git show preregistration-v2.4:PREREGISTRATION_V2.md
+cmd = ['C:/Program Files/Git/cmd/git.exe', 'show', 'preregistration-v2.4:PREREGISTRATION_V2.md']
 v24_text = subprocess.check_output(cmd, encoding='utf-8')
 
 with open('PREREGISTRATION_V2.md', 'r', encoding='utf-8') as f:

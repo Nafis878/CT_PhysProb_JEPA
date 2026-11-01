@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+Generates CLAIMS_VS_EVIDENCE_V2.md mapping manuscript claims to Phase 3 confirmatory results.
+Strictly reflects:
+- Corrected M=40 pre-registered primary hypothesis family under joint Holm-Bonferroni correction
+- Separation of exploratory comparisons
+- H3 TOST equivalence with pre-registered scope note and ODE correction magnitude
+- H4b multi-estimand audit, sign convention, and structural reconciliation with H4
+- Retraction of unsubstantiated hazard head bias claim
+- Correct labeling (PatchTST_RUL_v2 has KneeHazardHead; N/A conformal metrics for deterministic heuristics)
+"""
+
+from pathlib import Path
+
+content = """# CLAIMS VS. EVIDENCE AUDIT LEDGER (PHASE 3 CONFIRMATORY AUDIT — v2.5 PROTOCOL)
+**Document Version:** 2.1 (Post-Confirmatory Phase 3 Corrected Audit)  
+**Date:** 2026-11-01  
+**Investigator:** Research Engineer and Statistician  
+**Target Manuscript:** `manuscript/main.tex` (RESS Revision)  
+**Empirical Evidence Base:** Official Phase 3 Confirmatory Logs on NASA C-MAPSS FD003 Official Test Set (30 Seeds)  
+- `results/raw/phase3_confirmatory_raw.csv` (3,000 real model-regime runs)  
+- `results/raw/phase3_h4b_ablation_raw.csv` (180 real component ablation runs)  
+- `results/raw/phase3_preregistered_40family_statistical_results.csv` ($M=40$ primary tests with Holm-Bonferroni & dual bootstrap CIs)  
+- `results/raw/phase3_exploratory_comparisons_statistical_results.csv` (15 non-preregistered stress comparisons isolated as exploratory)  
+- `results/raw/phase3_h3_tost_results.csv` (TOST integrator equivalence)  
+- `results/raw/phase3_h4b_ablation_corrected_audit_results.csv` (10 component ablation tests with dual estimand CIs)  
+
+---
+
+## 1. Abstract Claims Audit
+
+| # | Abstract Text / Core Claim | Phase 3 Confirmatory Status | Empirical Evidence in Real Logs | Action for Manuscript |
+| :-: | :--- | :---: | :--- | :--- |
+| **A1** | *"Prognostic pipelines suffer from severe optimistic bias during multi-cycle blackout intervals."* | **SUPPORTED** | Confirmed across all blackout regimes on FD003 test engines. Baselines without active-bias mitigation exhibit optimistic bias up to $+6.48$ cycles (`GRU_D_Original` in OOD 10x--20x) and $+4.93$ cycles (`GRU_D_Canonical_SWA` in extreme 20x--30x). Models lacking continuous-time recurrent decay drift under long outages (e.g. `PatchTST_RUL_v2` exhibits $+5.63$ cycles bias on 20x--30x despite having `KneeHazardHead`). | **KEEP** as foundational motivation. Clarify that bias occurs across linear probe and transformer baselines during prolonged outages. |
+| **A2** | *"A 2nd-order Hamiltonian continuous-time latent dynamics model provides superior RUL prediction accuracy during telemetric blackouts."* | **NOT SUPPORTED (REFUTED)** | Evaluated strictly under Hypothesis H5 (Proposed vs NoPhysics). Paired difference on primary endpoint `RMSE_All` is $\\Delta = -0.037\\text{ cycles}$ ($t = -0.21, p = 0.835, p_{\\text{Holm}} = 1.0$), with Estimand 1 bootstrap 95% CI $[-0.112, -0.003]$ and Estimand 2 CI $[-0.097, +0.022]$ (practical threshold $\\ge 0.50$ not met). Active signed bias difference is $\\Delta = +0.265\\text{ cycles}$ ($p = 0.577, p_{\\text{Holm}} = 1.0$). The empirical per-seed mean ODE correction magnitude is only $|\Delta y_{\\text{ODE}}| = 2.54 \\pm 0.90$ cycles, while the countdown hazard head carries $>96\\%$ of prediction variance. | **REMOVE ALL CLAIMS OF LATENT PHYSICS ACCURACY BENEFIT.** Replace with transparent limitation statement: *"The Hamiltonian continuous-time latent as parameterized receives no consistent learning signal and contributes no measurable accuracy or bias benefit over a matched non-physics backbone."* |
+| **A3** | *"Strang-symplectic splitting provides distinct physical inductive bias and energy conservation that outperforms standard Euler integration."* | **REFUTED (EQUIVALENCE CONFIRMED)** | Evaluated strictly under Hypothesis H3 via Two One-Sided Tests (TOST) with margins $\\delta = \\pm 0.25$ RMSE and $\\pm 0.50$ Bias. Difference between Strang and Euler is $-0.0040 \\pm 0.0074$ cycles RMSE ($p_{\\text{TOST}} = 1.20 \\times 10^{-46}$) and $+0.0084 \\pm 0.0132$ cycles Bias ($p_{\\text{TOST}} = 1.19 \\times 10^{-47}$). Per-seed Strang vs Euler difference is only $0.0210 \\pm 0.0135$ cycles.<br>*Scope note:* Equivalence reflects that the ODE correction magnitude ($2.54$ cycles) is negligible relative to the dominant hazard head in this parameterization, not a general theoretical statement about symplectic integration in other physical domains. | **REMOVE CLAIMS OF SYMPLECTIC ADVANTAGE.** State equivalence honestly with scope note: *"Strang splitting and forward Euler are statistically indistinguishable within $\\pm 0.01$ cycles; structural symplecticity provides no empirical advantage in this setting because the latent ODE contributes negligibly to the final prediction."* |
+| **A4** | *"The continuous-time proposed architecture achieves the best overall RUL prediction across all evaluated baselines."* | **NOT SUPPORTED (REFUTED)** | Confirmatory accounting demonstrates that multiple competitors tie or beat the proposed model on primary `RMSE_All` ($16.81 \\pm 0.83$):<br>1. `TimeCorrected_LOCF_Oracle`: **$12.26$ cycles** (beats proposed by $4.55$ cycles, $p < 10^{-15}$).<br>2. `PatchTST_RUL_v2`: **$16.23 \\pm 0.59$ cycles** (beats proposed by $0.58$ cycles, $p = 0.0012$).<br>3. `GRU_D_Canonical_SWA`: **$16.58 \\pm 0.80$ cycles** (ties within noise, $p = 0.219$).<br>4. `GRU_D_Original`: **$16.63 \\pm 0.67$ cycles** (ties within noise, $p = 0.398$).<br>5. `Plain_NODE_Enhanced_SWA`: **$16.74 \\pm 0.84$ cycles** (ties within noise, $p = 0.707$).<br>6. `CT_PhysProb_JEPA_NoPhysics`: **$16.84 \\pm 0.79$ cycles** (ties within noise, $p = 0.835$). | **REMOVE ALL CLAIMS OF 'BEST MODEL'.** Report the proposed architecture honestly as **competitive with modern continuous-time baselines**, with explicit disclosure of competitors that tie or outperform it. |
+| **A5** | *"Closed-form Knee-Hazard countdown head suppresses optimistic bias during prolonged telemetric blackouts."* | **SUPPORTED (WITH RECONCILED SCOPE)** | Confirmed under Hypothesis H2 across extreme outage regimes ($20\\text{x}\\text{--}30\\text{x}$). All recipe backbones equipped with KneeHazardHead reduce active degradation optimistic bias by $2.04$ to $2.29$ cycles vs `GRU_D_Canonical_SWA` (all $p_{\\text{Holm}} < 0.03$). In H4, recipe backbones reduce optimistic bias vs `GRU_D_Original` by $\\approx 4.0$ to $4.4$ cycles ($p_{\\text{Holm}} < 10^{-4}$).<br>*H4b Reconciliation:* In isolated leave-one-out testing (`H4b_No_HazardHead`), removing the hazard head while keeping SWA, mixed-gap, and masking shifted bias by only $-0.57 \\pm 3.80$ cycles ($p_{\\text{Holm}} = 0.951$, not significant). Thus, the large bias reduction is driven by the combination of asymmetric safety loss, temporal masking, and the hazard head, rather than the hazard head alone. | **KEEP & REVISE SCOPE.** Attribute optimistic bias suppression to the head and safety loss integration during prolonged outages; do not claim a $-4.0$-cycle bias reduction for the hazard head in isolation. |
+| **A6** | *"The Blackout-Robust Recipe (Masked GRU-D + Mixed-Gap Augmentation + Knee-Hazard Head + SWA) provides significant structural advantages over original-recipe baselines."* | **SUPPORTED WITH QUALIFICATION** | Confirmed under H4 against `PatchTST_Original` ($-2.85$ to $-2.89$ cycles RMSE, $p_{\\text{Holm}} < 0.028$) and `Plain_2ndOrder_NODE_Kin_Original` ($-4.26$ to $-4.33$ cycles RMSE, $p_{\\text{Holm}} < 10^{-9}$). Component ablation H4b confirms that Mixed-Gap training contributes $-2.22$ cycles RMSE ($p_{\\text{Holm}} = 9.58 \\times 10^{-6}$) and SWA contributes $-1.61$ cycles RMSE ($p_{\\text{Holm}} = 8.29 \\times 10^{-5}$). However, re-frozen `GRU_D_Original` matches the recipe on point RMSE ($16.63$ vs $16.81$, $p = 0.40$). Because H4 single-verdict rule requires all 9 comparisons to pass, overall H4 verdict is `RECIPE EFFECT NOT FULLY SUPPORTED`. | **REVISE MANUSCRIPT.** State clearly: *"The training and head recipe dramatically improves Transformer and Neural ODE baselines, while matching the point RMSE of heavily-tuned recurrent baselines but slashing their optimistic bias by $\\approx 4.0$ cycles."* |
+| **A7** | *"Split-conformal prediction provides valid finite-sample coverage and reduces condition-based maintenance (CBM) risk."* | **SUPPORTED** | Confirmed on official FD003 test engines using 20 pre-registered calibration units. Across 30 seeds, achieves **$89.5\\%$ empirical coverage** against the $90.0\\%$ target with finite-sample bounds, maintaining zero missed critical failures ($0.00\\%$) and an expected CBM cost of $\$0.0066$ per cycle. | **KEEP.** Update exact empirical coverage to $89.5\\%$ and width to $41.88$ cycles from the confirmatory ledger. |
+
+---
+
+## 2. Introduction & Contribution Bullets Audit
+
+| Section / Contribution Item | Claimed Text in Manuscript | Confirmatory Verdict | Empirical Evidence in `results/raw/` | Required Manuscript Modification |
+| :--- | :--- | :---: | :--- | :--- |
+| **Contribution 1** (Continuous-Time Hamiltonian Dynamics) | Claimed that Hamiltonian mechanics provide energy-conserving latent coordinates that prevent degradation drift. | **REFUTED** | Phase 3 confirms H5: $\\Delta = -0.037\\text{ cycles}$ ($p = 0.835, p_{\\text{Holm}} = 1.0$). H3 confirms Strang $\\equiv$ Euler within $\\pm 0.01$ cycles ($p < 10^{-45}$). Mean ODE correction is only $2.54 \\pm 0.90$ cycles, and over $96\\%$ of prediction variance is carried by the countdown hazard head. | **RETRACT CLAIM.** Reframe Contribution 1 around empirical transparency: formal diagnostic proof and confirmatory verification that additive 2nd-order Hamiltonian latents provide no measurable prognostic signal in discrete-sampled degradation telemetry. |
+| **Contribution 2** (The Blackout Prognostic Recipe) | Claimed that the combination of masked temporal encoding, mixed-gap augmentation, knee-hazard head, and SWA solves blackout brittleness. | **SUPPORTED WITH QUALIFICATION** | Verified in H4 and H4b across 30 seeds. Mixed-gap training cuts error by $2.22$ cycles ($p < 10^{-5}$); SWA cuts error by $1.61$ cycles ($p < 10^{-4}$); recipe cuts optimistic bias vs `GRU_D_Original` by $\\approx 4.0$ to $4.4$ cycles ($p < 10^{-4}$). But point RMSE ties tuned `GRU_D_Original` ($16.63$). | **KEEP AS PRIMARY CONTRIBUTION.** Promote the recipe as the central methodological contribution of the paper, detailing the individual contributions of mixed-gap training and SWA. |
+| **Contribution 3** (Sensor Dropout Resilience) | Claimed that the proposed model exhibits unique resilience to sudden sensor channel dropouts during outages. | **NOT SUPPORTED** | Evaluated in H1 (12 pre-registered tests). When baselines receive explicit zero-mask inputs per the symmetry table, the proposed model is tied with `GRU_D_Canonical_SWA` and `NoPhysics` ($p_{\\text{Holm}} = 1.0$). Exploratory comparisons show `PatchTST_RUL_v2` outperforms proposed at 20% dropout ($17.25$ vs $18.54$, $p = 0.0049$). | **RETRACT UNIQUE RESILIENCE CLAIM.** State honestly: *"Sensor dropout resilience is driven entirely by the explicit sensor masking mechanism shared across models; the proposed architecture exhibits no unique advantage over other masked backbones."* |
+| **Contribution 4** (Conformal Calibration & CBM Decision Rules) | Claimed that split-conformal calibration with finite-sample corrections guarantees coverage and prevents costly unplanned engine teardowns. | **SUPPORTED** | Calibrated on 20 independent engines; evaluated on 100 test engines across 30 seeds. Achieves $89.5\\%$ coverage, eliminates missed critical failures ($0.00\\%$), and maintains minimal expected CBM cost ($\$0.0066$). | **KEEP.** Update numbers to match FD003 test ledger ($89.5\\%$, $41.88$ cycles width, $\$0.0066$). |
+
+---
+
+## 3. Specific Manuscript Tables Audit
+
+| Manuscript Table | Target Topic | Old Pre-Audit / Legacy Content | Status in Confirmatory Repo | Action Required for Manuscript Revision |
+| :--- | :--- | :--- | :--- | :--- |
+| **Table 1** (`tab:17competitors_ood`) | Master OOD Benchmark | Contained quarantined simulated rows and claims of lowest RMSE ($19.33$). | **REPLACED WITH OFFICIAL CONFIRMATORY LEDGER** | Populate with exact 30-seed FD003 test values:<br>- `TimeCorrected_LOCF_Oracle`: **$12.26 \\pm 0.00$**<br>- `PatchTST_RUL_v2`: **$16.23 \\pm 0.59$** (KneeHazardHead)<br>- `GRU_D_Canonical_SWA`: **$16.58 \\pm 0.80$**<br>- `GRU_D_Original`: **$16.63 \\pm 0.67$**<br>- `Plain_NODE_Enhanced_SWA`: **$16.74 \\pm 0.84$**<br>- `Euler_Damped`: **$16.81 \\pm 0.83$**<br>- `CT_PhysProb_JEPA_v2_SWA` (Proposed): **$16.81 \\pm 0.83$**<br>- `Undamped`: **$16.83 \\pm 0.85$**<br>- `CT_PhysProb_JEPA_NoPhysics`: **$16.84 \\pm 0.79$**<br>- `GRU_D_Enhanced_SWA`: **$16.87 \\pm 1.25$**<br>- `PatchTST_Original`: **$19.69 \\pm 4.02$**<br>- `Plain_2ndOrder_NODE_Kin_Original`: **$21.13 \\pm 1.81$**<br>- `Countdown`: **$22.09 \\pm 1.06$** |
+| **Table 2** (`tab:slope_breakdown`) | Active vs Plateau Bias Breakdown | Legacy numbers on FD001. | **REPLACED WITH OFFICIAL CONFIRMATORY LEDGER** | Populate with active degradation signed bias on FD003 (`OOD_10x_20x`):<br>- `GRU_D_Enhanced_SWA`: $+2.11 \\pm 2.97$<br>- `NoPhysics`: $+2.27 \\pm 1.86$<br>- `Undamped`: $+2.50 \\pm 2.17$<br>- `Euler_Damped`: $+2.52 \\pm 2.11$<br>- `CT_PhysProb_JEPA_v2_SWA`: $+2.53 \\pm 2.11$<br>- `Plain_NODE_Enhanced_SWA`: $+2.57 \\pm 1.82$<br>- `GRU_D_Canonical_SWA`: $+2.86 \\pm 1.69$<br>- `PatchTST_RUL_v2`: $+4.60 \\pm 1.82$<br>- `GRU_D_Original`: $+6.48 \\pm 1.73$ |
+| **Table 3** (`tab:multi_dataset_generalization`) | Fleet Generalization | Legacy entries claiming unverified runs across multiple datasets. | **CONFIRMATORY SCOPE DOCUMENTED** | Confirmatory evaluation completed on NASA C-MAPSS FD003 (100 official test engines, 30 seeds). FD004 protocol sealed under Amendment v2.6. FD001 designated strictly as exploratory development dataset. |
+| **Table 4** (`tab:ablation_design`) | Mechanism Ablations | Claims of Strang vs Euler divergence and undamped instability. | **REPLACED WITH OFFICIAL CONFIRMATORY LEDGER** | Report TOST equivalence: Strang ($16.81 \\pm 0.83$), Euler ($16.81 \\pm 0.83$), Undamped ($16.83 \\pm 0.85$). Report H4b component ablations confirming Mixed-Gap ($-2.22$ cycles) and SWA ($-1.61$ cycles) benefits. |
+| **Table 5** (`tab:conformal_cbm`) | Conformal Calibration & CBM | Legacy synthetic conformal metrics. | **REPLACED WITH OFFICIAL CONFIRMATORY LEDGER** | Report 30-seed split-conformal calibration on 20 independent engines evaluated on 100 official test engines ($89.5\\%$ coverage, $41.88$ cycles width, $\$0.0066$ CBM cost). Mark coverage as N/A for deterministic heuristics. |
+
+---
+
+## 4. Reconciled Audit of H4b Component Ablation & H4 Comparison
+
+### 4.1 Sign Convention Definition
+All paired differences in H4b are strictly defined as:
+$$\Delta = \\text{Metric}(\\text{All\\_On}) - \\text{Metric}(\\text{Ablated condition})$$
+- For `RMSE_All`: $\\Delta < 0$ indicates `All_On` achieved lower error (component is **beneficial**).
+- For `Signed_Bias_ActiveDeg`: $\\Delta < 0$ indicates `All_On` achieved lower optimistic bias.
+
+### 4.2 Multi-Estimand Accounting & Jensen's Inequality Explanation
+In non-linear metrics like RMSE, Jensen's inequality dictates:
+$$\\text{RMSE}\\left(\\frac{1}{30}\\sum_{s=1}^{30} \\hat{y}^{(s)}\\right) \\le \\frac{1}{30}\\sum_{s=1}^{30} \\text{RMSE}(\\hat{y}^{(s)})$$
+Under **Estimand 1 (Pre-Registered)**, bootstrap resamples engines and evaluates the metric on the seed-averaged ensemble prediction. Ensembling removes zero-mean seed variance, shrinking errors differentially and shifting the bootstrap CI relative to the arithmetic mean of individual single-seed paired differences $\\bar{\\Delta}$. Under **Estimand 2 (Sensitivity)**, the metric is computed per seed and differences are averaged across seeds, perfectly aligning the bootstrap center with $\\bar{\\Delta}$.
+Both estimands yield **identical verdicts across all 40 primary tests and all 10 H4b tests** (0 verdict shifts).
+
+| Condition | Endpoint | All-On Mean | Ablated Mean | Paired Diff $\\bar{\\Delta} \\pm \\text{SD}$ | Seed-Level 95% CI | Estimand 1 Bootstrap 95% CI | Estimand 2 Bootstrap 95% CI | $p_{\\text{raw}}$ | $p_{\\text{Holm}}$ | Verdict |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `All_Off` | `RMSE_All` | 16.87 | 18.24 | -1.368 ± 1.850 | [-2.059, -0.677] | [-1.088, -0.367] | [-1.717, -1.018] | 3.51e-04 | 2.81e-03 | **`COMPONENT BENEFICIAL`** |
+| `All_Off` | Bias | 2.11 | 2.94 | -0.832 ± 4.045 | [-2.342, +0.679] | [-1.476, -0.178] | [-1.476, -0.178] | 2.69e-01 | 9.51e-01 | **`NOT SUPPORTED`** |
+| `No_Mask` | `RMSE_All` | 16.87 | 17.38 | -0.512 ± 2.562 | [-1.469, +0.445] | [+0.300, +0.786] | [-0.768, -0.217] | 2.83e-01 | 9.51e-01 | **`NOT SUPPORTED`** |
+| `No_Mask` | Bias | 2.11 | 4.20 | -2.090 ± 7.592 | [-4.925, +0.745] | [-2.387, -1.784] | [-2.387, -1.784] | 1.42e-01 | 8.09e-01 | **`NOT SUPPORTED`** |
+| `No_MixedGap` | `RMSE_All` | 16.87 | 19.09 | -2.220 ± 1.966 | [-2.954, -1.486] | [-2.068, -1.201] | [-2.641, -1.792] | 9.58e-07 | 9.58e-06 | **`COMPONENT BENEFICIAL`** |
+| `No_MixedGap` | Bias | 2.11 | 1.10 | +1.013 ± 3.607 | [-0.334, +2.360] | [+0.394, +1.638] | [+0.394, +1.638] | 1.35e-01 | 8.09e-01 | **`NOT SUPPORTED`** |
+| `No_HazardHead` | `RMSE_All` | 16.87 | 16.52 | +0.352 ± 1.597 | [-0.245, +0.948] | [+0.149, +0.335] | [+0.262, +0.438] | 2.38e-01 | 9.51e-01 | **`NOT SUPPORTED`** |
+| `No_HazardHead` | Bias | 2.11 | 2.68 | -0.569 ± 3.800 | [-1.987, +0.850] | [-0.691, -0.440] | [-0.691, -0.440] | 4.19e-01 | 9.51e-01 | **`NOT SUPPORTED`** |
+| `No_SWA` | `RMSE_All` | 16.87 | 18.48 | -1.606 ± 1.640 | [-2.219, -0.994] | [-1.167, -0.400] | [-2.009, -1.209] | 9.21e-06 | 8.29e-05 | **`COMPONENT BENEFICIAL`** |
+| `No_SWA` | Bias | 2.11 | 0.39 | +1.721 ± 3.925 | [+0.256, +3.187] | [+1.264, +2.219] | [+1.264, +2.219] | 2.29e-02 | 1.61e-01 | **`NOT SUPPORTED`** |
+
+### 4.3 Structural Reconciliation: Why `GRU_D_Original` Matches Recipe While `H4b_All_Off` Does Not
+In H4, `GRU_D_Original` achieves $16.63$ RMSE (competitive with `GRU_D_Enhanced` at $16.87$), whereas in H4b, stripping the recipe components (`H4b_All_Off`) degrades performance to $18.24$ RMSE. The exact differences are:
+1. **Recurrent Capacity:** `GRU_D_Original` was independently tuned to hidden dimension $d=80$ (67% higher capacity than $d=48$ in `H4b_All_Off`).
+2. **Learning Rate & Optimization:** `H4b_All_Off` uses $\eta=5.0 \times 10^{-3}$ (tuned for SWA and hazard head); without SWA, this high learning rate causes suboptimal convergence. `GRU_D_Original` was tuned with $\eta=3.5 \times 10^{-3}$ and smaller input dimension ($D=42$ vs $D=56$, avoiding mask overhead).
+3. **Conclusion:** Removing recipe components from an architecture tuned *with* them degrades error by $1.37$ cycles. However, an architecture tuned *without* them can compensate on point RMSE via 67% larger recurrent capacity, but retains severe optimistic bias ($+6.48$ cycles vs $+2.11$ to $+2.53$ cycles).
+
+---
+
+## 5. Summary of Mandatory Scientific Revisions
+1. **Retract all "Best Model" Superlatives:** The proposed model is not the best on point RMSE; `PatchTST_RUL_v2` achieves lower RMSE ($16.23$ vs $16.81$, $p = 0.0012$), and kinematic baseline `TimeCorrected_LOCF_Oracle` achieves $12.26$.
+2. **Retract Inductive Bias / Symplectic Superiority Claims:** Strang-symplectic and Euler integrators are statistically equivalent ($p_{\\text{TOST}} < 10^{-45}$, diff $< 0.01$ cycles). State pre-registered scope note explaining that ODE correction magnitude is only $2.54$ cycles.
+3. **Report Latent Physics Limitation Openly:** The Hamiltonian latent ODE provides no measurable benefit over `NoPhysics` ($p = 0.835, p_{\\text{Holm}} = 1.0$).
+4. **Highlight the Legitimate Scientific Finding:** The **Blackout-Robust Recipe** (Masked GRU-D, Mixed-Gap Training, KneeHazardHead, and SWA) provides substantial, verifiable improvements in optimistic bias suppression ($>2.0$ cycles under extreme outages; $\\approx 4.0$ cycles vs `GRU_D_Original`) and Transformer/ODE stabilization ($-2.85$ to $-4.33$ cycles RMSE vs un-augmented baselines).
+"""
+
+with open('CLAIMS_VS_EVIDENCE_V2.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("Generated CLAIMS_VS_EVIDENCE_V2.md successfully.")
