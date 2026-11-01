@@ -1578,5 +1578,8 @@
     ]
   },
   "preregistration_v26_sha256": "967a58accd9cd9d9e114732f443367a2e06639e1dc80614b430b92853a178943",
-  "preregistration_v26_tag_name": "preregistration-v2.6"
+  "preregistration_v26_tag_name": "preregistration-v2.6",
+  "preregistration_v26_commit": "f2a23dc290a843efa5372feee56b12d6e6d428ea",
+  "preregistration_v26_tag_object": "962fa7f1b37dce76f6966cbf99b0abc1dfb7e20e",
+  "preregistration_v26_timestamp": "2026-11-01T15:28:56+06:00"
 }
