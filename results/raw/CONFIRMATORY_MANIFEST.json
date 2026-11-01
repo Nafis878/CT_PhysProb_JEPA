@@ -773,7 +773,7 @@
   "zero_overlap_assertion": "Zero overlap with FD001 development engines (FD001 train units 1-100 and FD001 test units 1-100 are isolated). Confirmatory evaluation is conducted strictly on NASA C-MAPSS FD003.",
   "preregistration_v2_sha256": "827728fcd941cd19bee0a81cf40e92b27d84b2f8784c20ea3500fb747e3db138",
   "preregistration_file": "PREREGISTRATION_V2.md",
-  "preregistration_version": "2.4",
+  "preregistration_version": "2.5",
   "preregistration_v22_sha256": "a5a49d1cb902564d869ae7f51194f39afc4fc0460669c985199d5e4eabaf47c8",
   "preregistration_history": {
     "v2.0": "Step 2 post-development freeze protocol",
@@ -781,7 +781,8 @@
     "v2.2_sha256": "a5a49d1cb902564d869ae7f51194f39afc4fc0460669c985199d5e4eabaf47c8",
     "v2.3_sha256": "5317da1e5579bf25571c2a7b93e120097c25d480c574ee1f1fec7be5df355ee6",
     "v2.3": "5317da1e5579bf25571c2a7b93e120097c25d480c574ee1f1fec7be5df355ee6",
-    "v2.4": "34224e9aa4a797a66059426bd06e7e6980b5108099651b17a45d97da7a081a6b"
+    "v2.4": "34224e9aa4a797a66059426bd06e7e6980b5108099651b17a45d97da7a081a6b",
+    "v2.5": "708bef147e8debb106b14ca72a12ea3ebf3cb3af1118d2756afd20204947930f"
   },
   "baseline_tuned_configurations": {
     "GRU_D_Enhanced_SWA": {
@@ -938,18 +939,15 @@
     "sub_threshold_label": "STATISTICALLY DETECTABLE BUT NOT PRACTICALLY RELEVANT"
   },
   "git_commit_hash": "e255c37e6c78355aae8650e3423e4f808ff6b9ad",
-  "git_tag": "preregistration-v2.4",
+  "git_tag": "preregistration-v2.5",
   "git_repository": "C:/Users/UseR/Downloads/Continous",
   "external_registration_record": {
-    "protocol_version": "v2.4",
-    "sha256": "34224e9aa4a797a66059426bd06e7e6980b5108099651b17a45d97da7a081a6b",
-    "tag": "preregistration-v2.4",
-    "remote_url": "file:///C:/Users/UseR/Downloads/Continous_Remote.git",
-    "timestamp": "2026-11-01T11:00:00+06:00",
-    "status": "LOCKED_BEFORE_CONFIRMATORY_RUNS",
-    "commit_hash": "e255c37e6c78355aae8650e3423e4f808ff6b9ad",
-    "annotated_tag_hash": "f8bf328233f3042d4bdefcd8e3a44a3b024dbf83",
-    "verified_on_remote": true
+    "protocol_version": "v2.5",
+    "sha256": "708bef147e8debb106b14ca72a12ea3ebf3cb3af1118d2756afd20204947930f",
+    "tag": "preregistration-v2.5",
+    "remote_url": "https://github.com/Nafis878/CT_PhysProb_JEPA.git",
+    "timestamp": "2026-11-01T11:12:00+06:00",
+    "status": "LOCKED_BEFORE_CONFIRMATORY_RUNS"
   },
   "conformal_calibration_selection": {
     "rng_seed": 20261101,
@@ -1060,5 +1058,6 @@
     100
   ],
   "preregistration_v24_sha256": "34224e9aa4a797a66059426bd06e7e6980b5108099651b17a45d97da7a081a6b",
-  "git_remote_url": "file:///C:/Users/UseR/Downloads/Continous_Remote.git"
+  "git_remote_url": "https://github.com/Nafis878/CT_PhysProb_JEPA.git",
+  "preregistration_v25_sha256": "708bef147e8debb106b14ca72a12ea3ebf3cb3af1118d2756afd20204947930f"
 }
