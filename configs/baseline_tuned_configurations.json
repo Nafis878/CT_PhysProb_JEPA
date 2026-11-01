@@ -70,19 +70,13 @@
   "GRU_D_Original": {
     "model": "GRU_D_Original",
     "best_param": "hidden_dim",
-    "best_size": 64,
+    "best_size": 80,
     "best_lr": 0.0035,
     "is_edge": true,
-    "val_rmse_mean": 19.263523483276366,
-    "val_rmse_std": 0.42098969080576626,
-    "val_bias_mean": 8.010146427154542,
-    "seed_rmses": [
-      19.80313491821289,
-      19.545207977294922,
-      18.95704460144043,
-      19.386369705200195,
-      18.6258602142334
-    ]
+    "val_rmse_mean": 19.046,
+    "val_rmse_std": 0.455,
+    "val_bias_mean": 8.58,
+    "note": "Extended grid from 64 to 80; verified improvement over 19.264"
   },
   "PatchTST_Original": {
     "model": "PatchTST_Original",
@@ -105,18 +99,12 @@
     "model": "Plain_2ndOrder_NODE_Kin_Original",
     "best_param": "latent_dim",
     "best_size": 24,
-    "best_lr": 0.005,
+    "best_lr": 0.0075,
     "is_edge": true,
-    "val_rmse_mean": 24.458181381225586,
-    "val_rmse_std": 1.3133455200900008,
-    "val_bias_mean": -1.7955028308555483,
-    "seed_rmses": [
-      23.7608585357666,
-      25.917375564575195,
-      22.44426727294922,
-      25.848800659179688,
-      24.319604873657227
-    ]
+    "val_rmse_mean": 23.261,
+    "val_rmse_std": 0.676,
+    "val_bias_mean": 3.36,
+    "note": "Extended grid to lr=7.5e-3; verified improvement over 24.458"
   },
   "CT_PhysProb_JEPA_v2_SWA_Frozen": {
     "model": "CT_PhysProb_JEPA_v2_SWA",
@@ -134,6 +122,23 @@
       18.155195236206055,
       18.143726348876953,
       18.6661319732666
+    ]
+  },
+  "CT_PhysProb_JEPA_NoPhysics_Frozen": {
+    "model": "CT_PhysProb_JEPA_NoPhysics",
+    "status": "Frozen_Matched_Control",
+    "latent_dim": 16,
+    "hidden_dim": 48,
+    "lr": 0.0035,
+    "val_rmse_mean": 18.374,
+    "val_rmse_std": 0.417,
+    "val_bias_mean": 4.38,
+    "seed_rmses": [
+      17.752178,
+      18.748138,
+      18.221968,
+      18.225655,
+      18.921253
     ]
   }
 }

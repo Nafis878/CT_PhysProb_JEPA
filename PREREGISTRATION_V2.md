@@ -1,5 +1,5 @@
-# PREREGISTRATION PROTOCOL (v2 REVISION — DATED AMENDMENT v2.3)
-**Document Version:** 2.3 (Dated Amendment before Confirmatory Runs)  
+# PREREGISTRATION PROTOCOL (v2 REVISION — DATED AMENDMENT v2.4)
+**Document Version:** 2.4 (Dated Amendment before Confirmatory Runs)  
 **Date of Execution:** 2026-11-01  
 **Target Journal:** *Reliability Engineering & System Safety* (RESS)  
 **Investigator:** Research Engineer and Statistician  
@@ -11,14 +11,15 @@
 - `v2.0` (2026-11-01): Initial Step 2 post-development freeze protocol.  
 - `v2.1` (2026-11-01): SHA-256 `827728fcd941cd19bee0a81cf40e92b27d84b2f8784c20ea3500fb747e3db138` (Phase 1 diagnostic corrections and recipe framing).  
 - `v2.2` (2026-11-01): SHA-256 `a5a49d1cb902564d869ae7f51194f39afc4fc0460669c985199d5e4eabaf47c8` (Two-sided hypothesis structure, TOST justifications, equal-budget baseline sweep).  
-- `v2.3` (2026-11-01): Current locked version (engine-level paired cluster bootstrap, practical significance thresholds, extended 5-seed baseline sweep, separate H3/H4b family structure, and external registration commit provenance).  
+- `v2.3` (2026-11-01): SHA-256 `5317da1e5579bf25571c2a7b93e120097c25d480c574ee1f1fec7be5df355ee6` (Engine-level cluster bootstrap, practical significance thresholds, separate H3/H4b family structure).  
+- `v2.4` (2026-11-01): Current locked version (independent FD003 calibration sampling, precise H1/H2 definitions, descriptive companions for bias, restored complete secondary endpoint portfolio, edge extension re-freezing, seed variability disclosure, and external git remote registration).  
 **Protocol Status:** LOCKED & FROZEN prior to unblinded confirmatory runs.  
 
 ---
 
 ## 1. Context, Protocol Provenance, & Contribution Framing
 
-This pre-registration document formally amends the confirmatory evaluation protocol following Step 2 model development and Phase 1 diagnostics.
+This pre-registration document formally amends and locks the confirmatory evaluation protocol following Step 2 model development and Phase 1 diagnostics.
 
 ### 1.1 Contribution Naming & Framing
 The primary object of study and core contribution of this work is the **RECIPE** for blackout-robust continuous-time remaining useful life prediction:
@@ -26,7 +27,7 @@ $$\text{Recipe} = \{\text{Masked GRU-D Temporal Encoder} + \text{Closed-Form Kne
 The **Recipe Family** evaluated comprises:
 $$\mathcal{M}_{\text{Recipe}} = \{\text{CT\_PhysProb\_JEPA\_NoPhysics}, \text{GRU\_D\_Enhanced\_SWA}, \text{CT\_PhysProb\_JEPA\_v2\_SWA}\}$$
 The Hamiltonian continuous-time latent is evaluated strictly as an additive continuous-time physics hypothesis on top of this recipe, **NOT** as the primary driver of performance.  
-*Development Budget Clarification:* The proposed model received three development rounds on FD001 validation units prior to freezing, while baseline models received the equal-budget hyperparameter sweep.
+*Development Budget Disclosure:* The proposed model received three development rounds on FD001 validation units prior to freezing, while baseline models received the equal-budget validation hyperparameter sweep.
 
 ### 1.2 Formal ODE Limitation Statement & Diagnostic Metrics
 Following exhaustive diagnostic analysis on validation units across optimization dynamics, relative parameter updates, and variance partitioning:
@@ -46,36 +47,64 @@ Under AdamW ($\eta = 3.5 \times 10^{-3}, \lambda = 10^{-4}$), the weight decay s
 ### 1.3 Anchor Reconciliation Diagnosis
 - **Core Empirical Finding**:
   > *"97.9% of the dense-vs-onset anchor gap is attributable to sparse observation history; mechanism (EWMA staleness vs general information loss) not isolated."*
-- **Mechanism Separation Test on Exact Same 280 Onset Windows**:
-  - Recomputing features for the SAME 280 onset windows under dense history ($dt=1$ up to $t_k$) vs. actual strided history yields an anchor RMSE of **$11.60$ cycles** (dense history) vs. **$15.26$ cycles** (strided history), a difference of **$-3.65$ cycles** that brings performance to within $0.07$ cycles of the dense validation baseline of $11.53$ cycles.
-  - Because contemporaneous raw sensor observations at onset cycle $t_k$ are identical ($0.0$ difference between strided and dense samples), replacing EWMA features with oracle dense EWMA while keeping strided raw inputs isolates that the $+3.65$-cycle anchor inflation is $100\%$ mediated through the EWMA memory channels (`mem_fast` and `mem_slow`).
-  - Dense validation windows are $38.2\%$ plateau / $61.8\%$ active degradation (not $>65\%$). Stratification explains only $-1.1\%$ of the gap. Mean absolute feature differences are $0.268$ (fast EWMA) and $0.160$ (slow EWMA); the earlier exploratory "29.6% lag" figure is retracted.
+- **Empirical Quantification on Validation Engines**:
+  - Dense in-distribution validation anchor RMSE: **$11.53$ cycles**.
+  - Sparse outage onset anchor RMSE (actual strided history): **$15.26$ cycles** (total shift: $+3.73$ cycles).
+  - Recomputed features for the **exact same 280 onset windows** under dense historical observations: **$11.60$ cycles** ($\Delta = -3.65$ cycles, recovering $97.9\%$ of the baseline accuracy).
+  - Contemporaneous raw sensor error at onset cycle $t_k$ is identically zero ($0.0$).
+  - Validation windows are confirmed to be $38.2\%$ plateau ($RUL=125$) and $61.8\%$ active degradation (earlier claim of $>65\%$ plateau retracted).
 - **Exploratory Status of Phase 1 Stress Probes**: All preliminary stress tests evaluated during Phase 1 on 5 or 10 seeds are classified as **EXPLORATORY ONLY** and will not be reported as confirmatory scientific findings.
+
+### 1.4 Baseline Tuning Protocol & Edge Extension Verification
+- **Sweep Scope & Trial Budget**: Evaluated across 9 to 11 trials per model across sizes and learning rates on **5 validation seeds** (`[42, 100, 101, 102, 103]`), totaling 345 training runs logged in `results/raw/extended_baseline_sweep_raw.csv`.
+- **Edge Extensions & Boundary Concavity**:
+  - For models whose initial best setting lay at an edge, the grid was extended by one step in that direction:
+    - `GRU_D_Enhanced_SWA`: `hidden_dim=48` ($18.143$) was confirmed locally optimal; extending to `64` degraded RMSE to $18.234$.
+    - `GRU_D_Canonical_SWA`: `hidden_dim=80` ($17.909$) was confirmed locally optimal; extending to `96` degraded RMSE to $18.076$.
+    - `PatchTST_RUL_v2`: `lr=1.0e-3` ($18.455$) was confirmed locally optimal; extending to `5.0e-4` degraded RMSE to $18.734$.
+    - `GRU_D_Original`: extending `hidden_dim` from `64` ($19.264$) to `80` improved RMSE to **$19.046 \pm 0.455$** (re-frozen at $80$).
+    - `Plain_2ndOrder_NODE_Kin_Original`: extending `lr` to `7.5e-3` improved RMSE to **$23.261 \pm 0.676$** (re-frozen at `latent=24, lr=7.5e-3`).
+    - `Plain_NODE_Enhanced_SWA` and `PatchTST_Original` achieved clear interior optima.
+
+### 1.5 Validation Seed Variability Diagnosis
+- **Investigation of Seed Variance Shifts**:
+  - Historical Step 2 development (10 seeds, where seed simultaneously controlled model initialization, batch order, and blackout window onset cycle sampling `seed = s + 4000`) yielded an SD of **$0.8367$ cycles** (Mean = $18.947$).
+  - Fixed-window validation (where validation windows are fixed at `seed = 4042`, and the seed controls purely model weight initialization via `torch.manual_seed(seed)` and minibatch sequence order via `torch.randperm(N)`) yielded:
+    - Extended sweep 5 seeds (`[42, 100, 101, 102, 103]`): SD = **$0.3753$ cycles** (Mean = $18.208$).
+    - Across all 10 original seeds under fixed validation windows: SD = **$0.2384$ cycles** (Mean = $18.108$).
+  - **Conclusion**: The earlier $\sim 0.8\text{--}0.9$ cycle standard deviation was driven by validation window sampling variance across seeds, whereas standard benchmark evaluation with fixed validation windows isolates parameter initialization and SGD stochasticity, producing standard deviations of $0.16\text{--}0.38$ cycles.
+
+### 1.6 Expected Outcomes Disclosed Before Unblinding Data
+Based on extensive validation findings on FD001:
+1. **Recipe Effect (H4)** is expected to be supported on Primary Endpoint RMSE against original-recipe baselines, as mixed-gap augmentation, masked encoding, knee-hazard countdown head, and SWA systematically improve blackout robustness. However, because original baselines exhibit severe under-prediction, H4's signed bias component may not be supported.
+2. **Additive Continuous-Time Physics Benefit (H5)** is expected **NOT** to be supported ($\Delta_{\text{RMSE}} \approx 0, p_{\text{Holm}} \ge 0.05$), consistent with validation diagnostic evidence showing the Hamiltonian latent ODE parameters receive no consistent learning signal during long blackout outages.
+3. **Integrator Symplecticity Equivalence (H3)** is expected to be confirmed within $\delta = \pm 0.25$ cycles.
+4. **No Superiority Claim**: There is no pre-registered BEST / COMPETITIVE superiority verdict versus all models, and the paper will make no "best model" claim.
 
 ---
 
 ## 2. Extended Symmetry & Re-Frozen Baseline Configurations
 
-Before protocol locking, an extended equal-budget validation hyperparameter sweep (9 trials per model over 3 learning rates $\times$ 3 sizes, evaluated across 5 validation seeds: `[42, 100, 101, 102, 103]`) was conducted on FD001 validation units and logged to `results/raw/extended_baseline_sweep_raw.csv`. The resulting best configurations are frozen in `configs/baseline_tuned_configurations.json` and tabulated below alongside the frozen proposed model.
+All 11 evaluated architectures are frozen and specified in [`configs/baseline_tuned_configurations.json`](file:///C:/Users/UseR/Downloads/Continous/configs/baseline_tuned_configurations.json) and tabulated below:
 
 | # | Model Name | Temporal Encoder | Prediction Head | Latent Integrator / Dynamics | SWA (Last 3 Ep.) | Explicit Mask $m \in \{0, 1\}^{14}$ | Training Recipe | Epochs / Batch Size | Optimizer ($lr$, $wd$) | Tuned Parameters (Equal Budget) | Val RMSE (5 Seeds) | Input Dim ($D$) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | `CT_PhysProb_JEPA_v2_SWA` | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | Hamiltonian Strang-symplectic (damped) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Frozen (3 dev rounds) | $18.208 \pm 0.375$ | 56 |
-| 2 | `NoPhysics` | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | None ($\Delta y_{\text{ODE}} = 0$) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Frozen matched control | — | 56 |
+| 2 | `NoPhysics` | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | None ($\Delta y_{\text{ODE}} = 0$) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Frozen matched control | $18.374 \pm 0.417$ | 56 |
 | 3 | `Euler_Damped` (Descriptive) | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | Forward Euler (damped, $\gamma > 0$) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Frozen matched control | — | 56 |
 | 4 | `Undamped` (Descriptive) | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | Hamiltonian Strang-symplectic ($\gamma = 0$) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Frozen matched control | — | 56 |
 | 5 | `GRU_D_Enhanced_SWA` | Canonical GRU-D Cell | KneeHazardHead (closed-form) | None (recurrent decay) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($5.0 \times 10^{-3}$, $10^{-4}$) | Tuned: `dim=48`, `lr=5e-3` | $18.143 \pm 0.265$ | 56 |
 | 6 | `GRU_D_Canonical_SWA` | Canonical GRU-D Cell | Linear-Tanh-Linear Probe | None (mask-driven decay) | Yes (ep 5-7) | Yes (drives decay toward last obs) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Tuned: `dim=80`, `lr=3.5e-3` | $17.909 \pm 0.160$ | 56 |
 | 7 | `Plain_NODE_Enhanced_SWA` (Descriptive) | GRU-D Temporal (dim 48) | KneeHazardHead (closed-form) | 2nd-order Neural ODE (Euler 4-step) | Yes (ep 5-7) | Yes (concatenated) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Tuned: `latent=24`, `lr=3.5e-3` | $18.105 \pm 0.293$ | 56 |
 | 8 | `PatchTST_RUL_v2` (Descriptive) | Patched Transformer (5 tokens) | KneeHazardHead (closed-form) | None | Yes (ep 5-7) | Yes (dedicated mask token) | Mixed gaps (short + stride 3-15) | 8 ep / 512 | AdamW ($1.0 \times 10^{-3}$, $10^{-4}$) | Tuned: `d_model=64`, `lr=1e-3` | $18.455 \pm 0.164$ | 56 |
-| 9 | `GRU_D` (original) | Canonical GRU-D Cell | Linear-Tanh-Linear Probe | None | No* | No* (zero-fill) | Short dropouts only ($p=0.25$)* | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Tuned: `dim=64`, `lr=3.5e-3` | $19.264 \pm 0.421$ | 42 |
+| 9 | `GRU_D` (original) | Canonical GRU-D Cell | Linear-Tanh-Linear Probe | None | No* | No* (zero-fill) | Short dropouts only ($p=0.25$)* | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Re-frozen: `dim=80`, `lr=3.5e-3` | $19.046 \pm 0.455$ | 42 |
 | 10 | `PatchTST_RUL` (original) | Patched Transformer (3 tokens) | Linear-Tanh-Linear Probe | None | No* | No* | Short dropouts only ($p=0.25$)* | 8 ep / 512 | AdamW ($3.5 \times 10^{-3}$, $10^{-4}$) | Tuned: `d_model=48`, `lr=3.5e-3` | $21.397 \pm 0.397$ | 42 |
-| 11 | `Plain_2ndOrder_NODE_Kin` (original) | Linear-Tanh-Linear MLP | Linear-Tanh-Linear Probe | Kinematic Euler ($M=1$) | No* | No* | Short dropouts only ($p=0.25$)* | 8 ep / 512 | AdamW ($5.0 \times 10^{-3}$, $10^{-4}$) | Tuned: `latent=24`, `lr=5e-3` | $24.458 \pm 1.313$ | 42 |
+| 11 | `Plain_2ndOrder_NODE_Kin` (original) | Linear-Tanh-Linear MLP | Linear-Tanh-Linear Probe | Kinematic Euler ($M=1$) | No* | No* | Short dropouts only ($p=0.25$)* | 8 ep / 512 | AdamW ($7.5 \times 10^{-3}$, $10^{-4}$) | Re-frozen: `latent=24`, `lr=7.5e-3` | $23.261 \pm 0.676$ | 42 |
 
-### 2.1 Descriptive Model Classification & No "Best Model" Claim
-- Models `PatchTST_RUL_v2`, `Plain_NODE_Enhanced_SWA`, `Euler_Damped`, `Undamped`, and `EstimatedAnchor_Countdown` are classified as **DESCRIPTIVE**. Their results will be reported for scientific completeness but are not subject to formal confirmatory hypothesis tests and are excluded from the Primary Holm family.
-- **Explicit Scientific Boundary**:
-  > *"There is no pre-registered BEST / COMPETITIVE superiority verdict versus all models, and the paper will make no 'best model' claim."*
+*\*Intentional Asymmetries: Original-recipe benchmarks 9–11 lack mixed-gap augmentation, KneeHazardHead, binary mask vectors, and SWA by historical definition to quantify the cumulative benefit of the proposed recipe (Hypothesis H4).*
+
+### 2.1 Descriptive Model Classification
+Models `PatchTST_RUL_v2`, `Plain_NODE_Enhanced_SWA`, `Euler_Damped`, `Undamped`, `EstimatedAnchor_Countdown`, and `TimeCorrected_LOCF_Oracle` are classified as **DESCRIPTIVE**. Their results will be reported for scientific completeness but are not subject to formal confirmatory hypothesis tests and are excluded from the Primary Holm family.
 
 ---
 
@@ -100,8 +129,16 @@ A formal **`SUPPORTED`** or **`HARMS`** verdict requires satisfying **ALL THREE*
 2. Engine-level paired cluster bootstrap 95% CI strictly excludes 0, **AND**
 3. Paired sample mean difference $|\Delta| \ge \text{practical threshold}$ ($0.5$ cycles for RMSE, $1.0$ cycle for bias).
 
-*Special Labeling:* Any comparison where $p_{\text{Holm}} < 0.05$ and the bootstrap CI excludes 0, but $|\Delta| < \text{threshold}$, is formally labeled:
+*Sub-Threshold Designation:* Any comparison where $p_{\text{Holm}} < 0.05$ and the bootstrap CI excludes 0, but $|\Delta| < \text{threshold}$, is formally labeled:
 **`STATISTICALLY DETECTABLE BUT NOT PRACTICALLY RELEVANT`**.
+
+### 3.4 Interpretation of Signed Bias & Descriptive Companions
+Signed bias $\bar{e} = \text{mean}(\hat{y} - y^*)$ over active degradation windows can be artificially improved (shifted close to zero or negative) by systematic under-prediction, which produces premature alarms. In reliability engineering, under-prediction is heavily penalized by the asymmetric NASA score. Therefore:
+- Active-degradation signed bias **must be interpreted in conjunction with Total RMSE and the NASA score**.
+- Two pre-registered **DESCRIPTIVE companions** are reported alongside signed bias for Hypotheses H2 and H4:
+  1. `NASA Asymmetric Score`: $S = \sum (\exp(d_i/10) - 1)$ for $d_i > 0$ and $(\exp(-d_i/13) - 1)$ for $d_i < 0$.
+  2. `Late-Prediction Error`: $\text{mean}(\max(\hat{y} - y^*, 0))$.
+- *Pre-Data Disclosure:* Validation sweep results show that original-recipe baselines exhibit lower (negative) signed bias than recipe-family models due to severe under-prediction. Consequently, the signed bias component of Hypothesis H4 may not be supported.
 
 ---
 
@@ -112,7 +149,7 @@ A formal **`SUPPORTED`** or **`HARMS`** verdict requires satisfying **ALL THREE*
 - **Secondary Endpoints**:
   1. `RMSE_Last`: Prediction RMSE strictly at the final observed operational cycle before failure.
   2. `Active-Degradation Signed Bias`: Mean error $(\hat{y} - y^*)$ over windows with active degradation ($y^* < 125$ cycles).
-  3. `NASA Asymmetric Scoring Function`: Asymmetric penalty $S = \sum (\exp(d_i/10) - 1)$ for overestimates ($d_i > 0$) and $(\exp(-d_i/13) - 1)$ for underestimates ($d_i < 0$).
+  3. `NASA Asymmetric Scoring Function`: Penalizes late predictions exponentially harder than early predictions.
   4. `Anchor RMSE`: Prediction error at blackout onset $t_k$.
   5. `Gap-Induced RMSE`: Total RMSE minus Anchor RMSE.
   6. `Conformal Coverage & Interval Width`: Empirical coverage and mean prediction interval width at nominal $90\%$ coverage ($1 - \alpha = 0.90$).
@@ -124,21 +161,32 @@ A formal **`SUPPORTED`** or **`HARMS`** verdict requires satisfying **ALL THREE*
 2. `OOD 10x-20x`: Primary blackout horizon (stride $10\text{--}20$ cycles).
 3. `OOD 15x-25x`: Extended blackout horizon (stride $15\text{--}25$ cycles).
 4. `OOD 20x-30x`: Extreme blackout horizon (stride $20\text{--}30$ cycles).
-5. `Sensor Dropout 10%`: Random channel masking of $10\%$ of sensors.
-6. `Sensor Dropout 20%`: Random channel masking of $20\%$ of sensors.
-7. `Sensor Dropout 30%`: Extreme channel masking of $30\%$ of sensors.
+5. `Sensor Dropout 10%`: Random channel masking of $10\%$ of sensors during OOD 10x-20x blackout outage.
+6. `Sensor Dropout 20%`: Random channel masking of $20\%$ of sensors during OOD 10x-20x blackout outage.
+7. `Sensor Dropout 30%`: Extreme channel masking of $30\%$ of sensors during OOD 10x-20x blackout outage.
 
-### 4.3 Confirmatory Data Partition & Separation Protocol
-- **Dataset**: NASA C-MAPSS FD003 (two fault modes: HPC degradation + Fan degradation).
-- **Training Pool Mapping (100 engines in `train_FD003.txt`)**:
-  - **Official-Test Training (All 80 engines)**: Models evaluated on the official test set are trained on all 80 engines in `split_info['train']`.
-  - **5-Fold Unit-Level Cross-Validation**: Evaluates the 80 engines (16 per fold) strictly as a separate replication outside the Holm family.
-  - **Conformal Calibration Pool (20 engines)**: Engines `[1, 4, 7, 15, 20, 33, 35, 45, 48, 52, 59, 60, 61, 74, 84, 85, 87, 93, 94, 98]` are NEVER used in training; they are used exclusively for computing non-conformity scores ($q_{\hat{\alpha}}$) and validation monitoring.
-- **Checkpoint Rule**: The evaluated checkpoint is **ALWAYS** the fixed SWA average of epochs 5–7 (strictly zero checkpoint selection).
-- **Official Test Evaluation (100 engines in `test_FD003.txt` + `RUL_FD003.txt`)**:
+### 4.3 Conformal Prediction & CBM Protocol
+- **Non-Conformity Measure**: Absolute residual non-conformity score $s_i = |y_i - \hat{y}_i|$.
+- **Calibration Engine Pool**: Exactly 20 held-out training engines (never trained on) are used to calibrate conformal intervals. The $(1 - \alpha)$-quantile of scores is calculated with finite-sample correction:
+  $$\hat{q}_{\alpha} = \text{Quantile}\left(s_1, \dots, s_n; \frac{\lceil (n + 1)(1 - \alpha) \rceil}{n}\right)$$
+- **Prediction Interval**: $[\hat{y}_i - \hat{q}_{\alpha}, \hat{y}_i + \hat{q}_{\alpha}]$ clipped to $[0, 125]$.
+- **CBM Threshold & Cost Rule**: The planned maintenance intervention threshold $\tau_{\text{CBM}}$ and cost ratio $C_u / C_p = 5.0$ are fixed strictly on validation units prior to confirmatory evaluation.
+
+### 4.4 Confirmatory Data Partition & Separation Protocol
+- **Dataset**: NASA C-MAPSS FD003 (100 training engines in `train_FD003.txt`, 100 test engines in `test_FD003.txt`).
+- **Independent Calibration Unit Selection**:
+  - Sampled independently using `np.random.RandomState(seed=20261101)` without replacement from the 100 training engines.
+  - **20 Conformal Calibration Engines**: `[3, 12, 18, 23, 36, 46, 49, 51, 58, 62, 63, 64, 69, 73, 75, 76, 77, 92, 97, 99]`.
+  - These 20 engines are **strictly excluded** from gradient training across all official-test and cross-validation models.
+- **80 Training Engines for Official-Test Models**:
+  - Engines: `[1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 47, 48, 50, 52, 53, 54, 55, 56, 57, 59, 60, 61, 65, 66, 67, 68, 70, 71, 72, 74, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 93, 94, 95, 96, 98, 100]`.
+- **5-Fold Cross-Validation Rotation Protocol**:
+  - The 80 training engines are partitioned into 5 folds (16 engines each).
+  - In each fold $k \in \{0, 1, 2, 3, 4\}$, models train on 64 engines and evaluate on the 16 validation engines.
+  - Conformal calibration scores for each CV fold are computed against the 20 independent calibration engines, ensuring zero data leakage and consistent calibration distribution across folds.
+- **Official Test Set (100 engines in `test_FD003.txt` + `RUL_FD003.txt`)**:
   - Held out strictly until the final frozen evaluation.
-  - Evaluated exactly once per seed at the frozen SWA checkpoint. Zero test-set tuning.
-- **Zero-Overlap Guarantee**: Zero engines from FD001 used during exploratory or development stages are present in FD003.
+  - Evaluated exactly once per seed at the frozen SWA checkpoint (epochs 5–7 average). Zero test-set checkpoint selection.
 
 ---
 
@@ -156,7 +204,8 @@ SEEDS_30 = [
 ### 5.1 Primary Hypothesis Family ($M = 40$ Tests, Joint Holm-Bonferroni at $\alpha = 0.05$)
 
 #### Hypothesis H1: Sensor Channel Dropout Resilience (Two-Sided, 12 Tests)
-- **Endpoint**: Primary Endpoint `RMSE_All` under channel dropout fractions $\{10\%, 20\%, 30\%\}$.
+- **Regime**: Out-of-Distribution $10\text{x}\text{--}20\text{x}$ blackout outage with random sensor channel dropout fractions $\rho \in \{10\%, 20\%, 30\%\}$.
+- **Endpoint**: Primary Endpoint `RMSE_All`.
 - **Comparisons (12 tests total)**:
   1. `CT_PhysProb_JEPA_v2_SWA` vs `GRU_D_Enhanced_SWA` (3 dropouts).
   2. `CT_PhysProb_JEPA_v2_SWA` vs `NoPhysics` (3 dropouts).
@@ -164,12 +213,14 @@ SEEDS_30 = [
   4. `GRU_D_Enhanced_SWA` vs `GRU_D_Canonical_SWA` (3 dropouts).
 
 #### Hypothesis H2: Extreme Outage Optimistic Bias Suppression (Two-Sided, 8 Tests)
-- **Endpoint**: Active-degradation signed bias under extreme blackout horizons $\{15\text{x}\text{--}25\text{x}, 20\text{x}\text{--}30\text{x}\}$.
+- **Regimes**: Extended blackout horizon ($15\text{x}\text{--}25\text{x}$) and extreme blackout horizon ($20\text{x}\text{--}30\text{x}$).
+- **Endpoint**: Active-Degradation Signed Bias.
 - **Comparisons (8 tests total)**:
   1. `CT_PhysProb_JEPA_v2_SWA` vs `GRU_D_Enhanced_SWA` (2 horizons).
   2. `CT_PhysProb_JEPA_v2_SWA` vs `NoPhysics` (2 horizons).
   3. `NoPhysics` vs `GRU_D_Canonical_SWA` (2 horizons).
   4. `GRU_D_Enhanced_SWA` vs `GRU_D_Canonical_SWA` (2 horizons).
+- *Descriptive Companions:* NASA score and late-prediction error $\text{mean}(\max(\hat{y} - y^*, 0))$ are reported as descriptive companions without multiplicity penalty.
 
 #### Hypothesis H4: Recipe Effect vs. Original-Recipe Baselines (Two-Sided, 18 Tests)
 - **Objective**: Quantify cumulative performance shift attributable strictly to the training recipe.
@@ -180,6 +231,7 @@ SEEDS_30 = [
 - **Verdict Rule**:
   - Declare **`RECIPE EFFECT SUPPORTED`** only if every recipe-family model beats every original baseline with $p_{\text{Holm}} < 0.05$, bootstrap CI excluding 0, and $|\Delta| \ge \text{threshold}$.
   - Otherwise: report per-pair outcomes without a single overarching label.
+- *Descriptive Companions:* NASA score and late-prediction error are reported side-by-side.
 
 #### Hypothesis H5: Additive Latent Physics Benefit (Two-Sided, 2 Tests)
 - **Objective**: Test whether incorporating 2nd-order Hamiltonian ODE dynamics yields a significant benefit over the matched non-physics recipe (`CT_PhysProb_JEPA_v2_SWA` vs. `CT_PhysProb_JEPA_NoPhysics`).
@@ -189,7 +241,6 @@ SEEDS_30 = [
   - Declare **`PHYSICS HARMS`**: if $p_{\text{Holm}} < 0.05$, engine bootstrap CI excludes 0, and $|\Delta| \ge \text{threshold}$ in favor of non-physics baseline.
   - Declare **`STATISTICALLY DETECTABLE BUT NOT PRACTICALLY RELEVANT`**: if $p_{\text{Holm}} < 0.05$ and CI excludes 0, but $|\Delta| < \text{threshold}$.
   - Declare **`PHYSICS BENEFIT NOT SUPPORTED`**: if $p_{\text{Holm}} \ge 0.05$ or bootstrap CI covers 0.
-- Combined summary across both endpoints is reported only as descriptive text.
 
 ---
 
@@ -199,9 +250,9 @@ SEEDS_30 = [
 - **Framework**: Two One-Sided Tests (TOST) assessing whether Strang-symplectic leapfrog integration is practically equivalent to standard forward Euler integration under identical architecture and SWA.
 - **Family Structure**: Separate family ($\alpha = 0.05$) with Holm adjustment across its 2 endpoints (`RMSE_All` and active signed bias).
 - **Equivalence Margins & Justifications**:
-  - $\delta_{\text{RMSE}} = 0.25\text{ cycles}$: Corresponds to $\sim 1.3\%$ of the nominal $\sim 19$-cycle RMSE scale and is calibrated against the standard deviation of paired differences ($s_{\Delta} \le 0.02$ cycles in validation).
-  - $\delta_{\text{Bias}} = 0.50\text{ cycles}$: Corresponds to $\sim 5.5\%$ of the $\sim 9$-cycle active degradation bias.
-- **Statistical Power Note**: For $n = 30$ seeds with observed paired difference standard deviation $s_{\Delta} \le 0.02$ cycles, the statistical power to confirm equivalence within $\delta = 0.25$ exceeds $99.9\%$ ($\beta < 0.001$).
+  - $\delta_{\text{RMSE}} = \pm 0.25\text{ cycles}$: Corresponds to $\sim 1.3\%$ of the nominal $\sim 19$-cycle RMSE scale and is calibrated against the standard deviation of paired differences ($s_{\Delta} \le 0.02$ cycles in validation).
+  - $\delta_{\text{Bias}} = \pm 0.50\text{ cycles}$: Corresponds to $\sim 5.5\%$ of the active degradation bias.
+- **Statistical Power Note**: For $n = 30$ seeds with observed paired difference standard deviation $s_{\Delta} \le 0.02$ cycles, the statistical power to confirm equivalence within $\delta = \pm 0.25$ exceeds $99.9\%$ ($\beta < 0.001$).
 - **Scope Note**:
   > *"Equivalence reflects the marginal ODE contribution in this parameterization, not a general statement about symplectic integration."*
 
@@ -210,14 +261,15 @@ SEEDS_30 = [
   1. **All-On (Full Recipe)**: Mask + Mixed-Gap Augmentation + KneeHazardHead + SWA.
   2. **All-Off (Baseline Recipe)**: No mask (zero-fill) + Short-gap only ($p=0.25$) + Linear Probe Head + No SWA.
   3. **Leave-One-Out Ablations**:
-     - Without Explicit Mask ($m_t = 0$)
+     - Without Explicit Mask ($m_t = 0$, zero-fill)
      - Without Mixed-Gap Augmentation (trained on short gaps only)
      - Without KneeHazardHead (replaced by linear probe)
      - Without SWA (last-epoch weights only)
+- **Reported Statistics**: Paired mean difference $\Delta$, 95% Student's $t$ CI, paired $t$-test $p_t$, Wilcoxon signed-rank $p_w$, and Holm-adjusted $p$-value adjusted within the H4b family ($\alpha = 0.05$) across `RMSE_All` (5 tests) and active signed bias (5 tests).
 - **Constraint**: Separate family ($\alpha = 0.05$). No claims about individual components beyond this ablation.
 
 #### Hypothesis H6: Low-Data Fleet Scaling (Omitted)
-- **Status**: **OMITTED** from confirmatory testing to protect statistical power on primary endpoints.
+- **Status**: **OMITTED** from confirmatory testing to protect statistical power on primary reliability endpoints.
 
 ---
 
@@ -226,7 +278,8 @@ SEEDS_30 = [
 1. **Operating Conditions**: NASA C-MAPSS FD003 operates under a single nominal flight condition (sea level, condition 1).
 2. **Outage Realism**: Blackout intervals and channel dropouts are synthetically generated to model telemetric communication loss.
 3. **Development Provenance**: Model architecture and recipe were developed on FD001 validation units prior to freezing.
-4. **Second Confirmatory Dataset**: If computational budget permits following completion of FD003 confirmatory runs, **NASA C-MAPSS FD004** (multi-condition with 6 operational regimes and dual failure modes) will serve as a second confirmatory stress dataset; otherwise evaluation is restricted to FD003 as registered.
+4. **Boundary Tuning Limitation**: Although edge extensions were evaluated on validation units to confirm concavity, baseline architectures may remain mildly under-tuned relative to their asymptotic theoretical capacity.
+5. **Second Confirmatory Dataset**: If computational budget permits following completion of FD003 confirmatory runs, **NASA C-MAPSS FD004** (multi-condition with 6 operational regimes and dual failure modes) will serve as a second confirmatory stress dataset; otherwise evaluation is restricted to FD003 as registered.
 
 ---
 
